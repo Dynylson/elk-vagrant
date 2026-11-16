@@ -1,0 +1,48 @@
+name: Validar laboratório ELK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar Vagrantfile com Vagrant 2.4.9 (sem provedor)
+        shell: bash
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          curl -fsSL --retry 3 https://releases.hashicorp.com/vagrant/2.4.9/vagrant_2.4.9_linux_amd64.zip -o /tmp/vagrant.zip
+          echo '77d4d533c82c420b6b594992a902ec43fcd9f50380dc002a599e93fc744f8cfa  /tmp/vagrant.zip' | sha256sum -c -
+          unzip -q /tmp/vagrant.zip -d /tmp/vagrant-bin
+          /tmp/vagrant-bin/vagrant validate --ignore-provider
+      - name: Validar scripts e Compose
+        run: |
+          bash -n provision/setup.sh scripts/start.sh
+          python3 -m compileall -q scripts
+          docker compose config --quiet
+      - name: Preparar kernel do runner
+        run: sudo sysctl -w vm.max_map_count=1048576
+      - name: Iniciar stack e conferir os 120 eventos e objetos do Kibana
+        run: bash scripts/start.sh
+      - name: Reexecutar inicialização e verificar idempotência
+        run: bash scripts/start.sh
+      - name: Reiniciar serviços e verificar persistência
+        run: |
+          docker compose down
+          bash scripts/start.sh
+      - name: Logs para diagnóstico
+        if: always()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail=100
+      - name: Encerrar laboratório
+        if: always()
+        run: docker compose down -v
