@@ -16,7 +16,9 @@ Validações locais realizadas em **16/11/2026**, em anfitrião Fedora x86_64, u
 - Reexecução completa de `scripts/start.sh`, mantendo os mesmos 120 documentos.
 - Remoção e recriação dos contêineres com `docker compose down` e `scripts/start.sh`, preservando os volumes e os 120 eventos.
 
-As APIs foram utilizadas para validar dados e objetos do Kibana. Não foi realizada inspeção visual do dashboard pelo navegador.
+As APIs foram utilizadas para validar dados e objetos do Kibana. Uma inspeção posterior pelo navegador confirmou os quatro painéis renderizados, com captura real em [screenshots/kibana-dashboard.png](screenshots/kibana-dashboard.png).
+
+Essa inspeção identificou uma configuração ausente em `categoryAxes[].scale` nos dois gráficos de barras. O editor isolado reproduziu o erro `Cannot read properties of undefined (reading 'defaultYExtents')`. Após incluir a escala horizontal, a verificação dos quatro elementos `visualizationLoader` passou de dois para quatro com `data-render-complete="true"`. A captura usa o período das últimas duas horas para mostrar a distribuição dos eventos. A validação HTTP dos 120 eventos também foi repetida com sucesso.
 
 ## Limite da validação do Vagrant
 

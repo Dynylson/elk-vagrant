@@ -57,6 +57,10 @@ O provisionamento:
 
 ## Acessar
 
+Captura real do dashboard no Kibana, com os 120 eventos fictícios processados pelo Logstash:
+
+![Dashboard do Kibana com requisições, status HTTP, rotas e erros](docs/screenshots/kibana-dashboard.png)
+
 | Recurso | Endereço |
 | --- | --- |
 | Kibana | http://localhost:5601 |
